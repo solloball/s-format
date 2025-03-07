@@ -1,9 +1,10 @@
 package ru.nsu.jexpression.parser
 
 import ru.nsu.jexpression.JExpression
+import ru.nsu.sexpression.SExpressionParser
 
-class JExpressionParserDumb: JExpressionParser {
+class JExpressionParserDumb(private val sExpressionParser: SExpressionParser): JExpressionParser {
     override fun fromString(str: String): JExpression {
-        TODO("Not yet implemented")
+        return JExpression.fromSExpression(sExpressionParser.parse(str))
     }
 }
