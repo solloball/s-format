@@ -9,8 +9,8 @@ import ru.nsu.sexpression.SExpressionParserDumb
 fun main() {
     val parser = SExpressionParserDumb()
 
-    println(JExpression.fromSExpression(parser.parse("[ \"123\" hello hello2 1 ]")).getValue())
-    println(JExpression.fromSExpression(parser.parse("( [ \"123\" hello hello2 1 ] )")).getValue())
+    println(JExpression.fromSExpression(parser.parse("[ nameObject \"123\" hello hello2 1 ]")).getValue())
+    println(JExpression.fromSExpression(parser.parse("( [ name \"123\" hello hello2 1 ] )")).getValue())
 
     println(parser.parse("([hello] -123 [ 124 hello ] )"))
 }
