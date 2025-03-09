@@ -46,16 +46,16 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
     }
 
     class JObject private constructor(private val sExpression: SExpression.Array) : JExpression(sExpression = sExpression) {
-        override fun getValue(): Pair<String, Map<String, JExpression>> {
+        override fun getValue(): Map<String, JExpression> {
             val res = HashMap<String, JExpression>()
 
-            for (i in 1..sExpression.elements.size / 2 step 2) {
+            for (i in 0..sExpression.elements.size / 2 step 2) {
                 val key = sExpression.elements[i] as SExpression.AtomString
                 val value = fromSExpression(sExpression.elements[i + 1])
                 res[key.value] = value
             }
 
-            return Pair(sExpression.elements[0].toString(), res)
+            return res
         }
 
         companion object {
@@ -67,14 +67,11 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
             }
 
             private fun validate(sExpression: SExpression.Array): Boolean {
-                if (sExpression.elements.isEmpty()
-                    || sExpression.elements[0] !is SExpression.AtomString
-                    || sExpression.elements.size % 2 == 0
-                ) {
+                if (sExpression.elements.isEmpty() || sExpression.elements.size % 2 != 0) {
                     return false
                 }
                 val  keys = HashSet<String>()
-                for(i in 1..sExpression.elements.size / 2 step 2) {
+                for(i in 0..sExpression.elements.size / 2 step 2) {
                     val value = sExpression.elements[i]
                     if (value !is SExpression.AtomString || keys.contains(value.value)) {
                         return false
