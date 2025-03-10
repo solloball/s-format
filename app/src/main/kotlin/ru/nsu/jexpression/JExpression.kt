@@ -9,7 +9,7 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
         return sExpression.toString()
     }
 
-    class JString private constructor(private val sExpression: SExpression.AtomString): JExpression(sExpression = sExpression) {
+    class JString private constructor(private val sExpression: SExpression.AtomString) : JExpression(sExpression) {
         override fun getValue(): String {
             return sExpression.value
         }
@@ -21,7 +21,7 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
         }
     }
 
-    class JInteger private constructor(private val sExpression: SExpression.AtomInteger): JExpression(sExpression = sExpression) {
+    class JInteger private constructor(private val sExpression: SExpression.AtomInteger) : JExpression(sExpression) {
         override fun getValue(): Int {
             return sExpression.value
         }
@@ -33,7 +33,7 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
         }
     }
 
-    class JArray private constructor(private val sExpression: SExpression.List) : JExpression(sExpression = sExpression) {
+    class JArray private constructor(private val sExpression: SExpression.List) : JExpression(sExpression) {
         override fun getValue(): List<JExpression> {
             return sExpression.elements.map { fromSExpression(it) }
         }
@@ -45,16 +45,24 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
         }
     }
 
-    class JObject private constructor(private val sExpression: SExpression.Array) : JExpression(sExpression = sExpression) {
+    class JObject private constructor(private val sExpression: SExpression.Array) : JExpression(sExpression) {
         override fun getValue(): Pair<String, Map<String, JExpression>> {
-            val res = HashMap<String, JExpression>()
+            val res = mutableMapOf<String, JExpression>()
 
-            for (i in 1..sExpression.elements.size / 2 step 2) {
-                val key = sExpression.elements[i] as SExpression.AtomString
-                val value = fromSExpression(sExpression.elements[i + 1])
-                res[key.value] = value
+            // Считываем элементы с шагом 2, начиная с индекса 1 (ключ)
+            for (i in 1 until sExpression.elements.size step 2) {
+                val key = sExpression.elements[i] as? SExpression.AtomString
+                val value = sExpression.elements[i + 1]
+
+                // Проверяем, что ключ существует и добавляем пару ключ-значение
+                if (key != null) {
+                    res[key.value] = JExpression.fromSExpression(value)
+                } else {
+                    throw IllegalArgumentException("Invalid key in object: $key")
+                }
             }
 
+            // Возвращаем имя объекта и карту с его полями
             return Pair(sExpression.elements[0].toString(), res)
         }
 
@@ -66,6 +74,7 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
                 return JObject(sExpression)
             }
 
+            // Проверяем валидность структуры объекта
             private fun validate(sExpression: SExpression.Array): Boolean {
                 if (sExpression.elements.isEmpty()
                     || sExpression.elements[0] !is SExpression.AtomString
@@ -73,8 +82,8 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
                 ) {
                     return false
                 }
-                val  keys = HashSet<String>()
-                for(i in 1..sExpression.elements.size / 2 step 2) {
+                val keys = HashSet<String>()
+                for (i in 1 until sExpression.elements.size step 2) {
                     val value = sExpression.elements[i]
                     if (value !is SExpression.AtomString || keys.contains(value.value)) {
                         return false
@@ -85,6 +94,7 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
             }
         }
     }
+
     companion object {
         fun fromSExpression(sExpression: SExpression): JExpression {
             return when (sExpression) {
