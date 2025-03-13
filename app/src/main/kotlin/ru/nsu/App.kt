@@ -4,13 +4,23 @@
 package ru.nsu
 
 import ru.nsu.jexpression.JExpression
+import ru.nsu.jexpression_path.JExpressionPath
+import ru.nsu.jexpression_path.executor.JExpressionPathExecutor
+import ru.nsu.jexpression_path.executor.JExpressionPathExecutorDumb
+import ru.nsu.jexpression_path.parser.JExpressionPathParser
+import ru.nsu.jexpression_path.parser.JExpressionPathParserDumb
+import ru.nsu.jexpression_path.validator.JExpressionPathValidatorDumb
 import ru.nsu.sexpression.SExpressionParserDumb
 
 fun main() {
     val parser = SExpressionParserDumb()
+    val test = JExpression.fromSExpression(parser.parse("[ name [ otherName [ thirdName ( 1 2 SUCCESS  ) ] ]  ]"))
 
-    println(JExpression.fromSExpression(parser.parse("[ \"123\" hello hello2 1 ]")).getValue())
-    println(JExpression.fromSExpression(parser.parse("( [ \"123\" hello hello2 1 ] )")).getValue())
+    val path = JExpressionPath.Builder(
+        JExpressionPathParserDumb(),
+        JExpressionPathValidatorDumb(),
+        JExpressionPathExecutorDumb(),
+    ).build()
 
-    println(parser.parse("([hello] -123 [ 124 hello ] )"))
+    println(path.find("$.name.otherName[thirdName][2]", test))
 }
