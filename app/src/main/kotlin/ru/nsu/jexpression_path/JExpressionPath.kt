@@ -2,15 +2,16 @@ package ru.nsu.jexpression_path
 
 import com.google.common.collect.ImmutableList
 import ru.nsu.jexpression.JExpression
+import ru.nsu.jexpression_path.enums.PathMode
 import ru.nsu.jexpression_path.executor.JExpressionPathExecutor
 import ru.nsu.jexpression_path.parser.JExpressionPathParser
 import ru.nsu.jexpression_path.types.UpdaterResult
 import ru.nsu.sexpression.SExpression
 
-class JExpressionPath private constructor(
-    private val jExpressionPathParser: JExpressionPathParser,
-    private val jExpressionPathExecutor: JExpressionPathExecutor,
-) {
+class JExpressionPath {
+    private val jExpressionPathParser: JExpressionPathParser = JExpressionPathParser()
+    private val jExpressionPathExecutor: JExpressionPathExecutor = JExpressionPathExecutor()
+
     fun find(jExpressionPath: String, root: JExpression): List<JExpression> {
 
         val parserResult = jExpressionPathParser.parse(jExpressionPath)
@@ -41,17 +42,49 @@ class JExpressionPath private constructor(
         }
     }
 
-    class Builder() {
-        private lateinit var jExpressionPathParser: JExpressionPathParser
-        private lateinit var jExpressionPathExecutor: JExpressionPathExecutor
+    class QueryBuilder {
+        private var root: JExpression? = null
+        private var mode: PathMode? = null
+        private var path: String = ""
+        private var toChange: JExpression? = null
 
-        fun parser(jExpressionPathParser: JExpressionPathParser) = apply {
-            this.jExpressionPathParser = jExpressionPathParser
+        fun mode(mode: PathMode): QueryBuilder {
+            this.mode = mode
+            return this
         }
-        fun executor(jExpressionPathExecutor: JExpressionPathExecutor) = apply {
-            this.jExpressionPathExecutor = jExpressionPathExecutor
+        fun root(root: JExpression): QueryBuilder {
+            this.root = root
+            return this
+        }
+        fun dot(name: String): QueryBuilder {
+            this.path += ".$name"
+            return this
+        }
+        fun bracket(name: String): QueryBuilder {
+            this.path += "[$name]"
+            return this
+        }
+        fun bracketIndex(idx: Int): QueryBuilder {
+            this.path += "[$idx]"
+            return this
+        }
+        fun filter(predicateExpression: String): QueryBuilder {
+            this.path += "[?$predicateExpression]"
+            return this
         }
 
-        fun build() = JExpressionPath(jExpressionPathParser, jExpressionPathExecutor)
+        fun find(): List<JExpression> {
+            if (mode == null || root == null) {
+                throw IllegalArgumentException("Failed to find because of mode or root is null")
+            }
+            return JExpressionPath().find("${mode!!.jExpressionPrefix}$path", root!!)
+        }
+
+        fun update(): UpdaterResult {
+            if (mode == null || root == null || toChange == null) {
+                throw IllegalArgumentException("Failed to find because of mode or root is null")
+            }
+            return JExpressionPath().modify("${mode!!.jExpressionPrefix}$path", root!!, toChange!!)
+        }
     }
 }
