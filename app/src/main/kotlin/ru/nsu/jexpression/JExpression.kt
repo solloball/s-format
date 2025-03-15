@@ -3,7 +3,10 @@ package ru.nsu.jexpression
 import ru.nsu.sexpression.SExpression
 
 sealed class JExpression private constructor(private val sExpression: SExpression) {
-    abstract fun getValue(): Any?
+    abstract fun getValue(): Any
+    fun getSExpression(): SExpression {
+        return sExpression
+    }
 
     override fun toString(): String {
         return sExpression.toString()

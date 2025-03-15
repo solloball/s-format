@@ -12,4 +12,5 @@ sealed class PredictionOperand {
     data class LessEqual(val a: PredictionOperand, val b: PredictionOperand)
     data class Empty(val a: JExpression)
     data class Size(val a: JExpression)
+    data class Current(val a: JExpression)
 }

@@ -7,6 +7,7 @@ import ru.nsu.jexpression.JExpression
 import ru.nsu.jexpression_path.JExpressionPath
 import ru.nsu.jexpression_path.executor.JExpressionPathExecutorDumb
 import ru.nsu.jexpression_path.parser.JExpressionPathParserDumb
+import ru.nsu.sexpression.SExpression
 import ru.nsu.sexpression.SExpressionParserDumb
 
 fun main() {
@@ -21,4 +22,5 @@ fun main() {
 
     println(path.find("$.name.otherName[thirdName][2]", test))
     println(path.find("$..[name]", test2))
+    println(path.modify("$.name.otherName[thirdName][2]", test, JExpression.fromSExpression(SExpression.AtomString("New Value"))))
 }

@@ -79,7 +79,6 @@ class JExpressionPathExecutorDumb: JExpressionPathExecutor {
         TODO()
     }
 
-
     private fun executeCurrent(list: List<JExpression>): List<JExpression> {
         return list
     }
