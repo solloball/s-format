@@ -6,6 +6,7 @@ import ru.nsu.jexpression_path.enums.PathMode
 import ru.nsu.jexpression_path.predicate_expression.PredicateExpressionExecutor
 import ru.nsu.jexpression_path.types.ParserResult
 import ru.nsu.jexpression_path.types.PredicateOperand
+import javax.annotation.concurrent.Immutable
 
 class JExpressionPathExecutor {
     fun execute(root: JExpression, parserResult: ParserResult): List<JExpression> {
@@ -78,6 +79,11 @@ class JExpressionPathExecutor {
     private fun executeFilter(list: List<JExpression>, argument: List<Any>): List<JExpression> {
         val operand = argument[0] as PredicateOperand
 
-        return list.filter { PredicateExpressionExecutor.execute(operand, it) }
+        return list.flatMap{ when(it) {
+            is JExpression.JArray -> it.getValue().filter { jExpression -> PredicateExpressionExecutor.execute(operand, jExpression) }
+            is JExpression.JInteger -> if (PredicateExpressionExecutor.execute(operand, it)) arrayListOf(it) else emptyList()
+            is JExpression.JObject -> it.getValue().values.filter { jExpression -> PredicateExpressionExecutor.execute(operand, jExpression)  }
+            is JExpression.JString -> if (PredicateExpressionExecutor.execute(operand, it)) arrayListOf(it) else emptyList()
+        } }
     }
 }

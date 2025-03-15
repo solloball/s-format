@@ -20,13 +20,13 @@ fun main() {
     println(path.find("$.name.otherName[thirdName][2]", test))
     println(path.find("$..[name]", test2))
     println(path.modify("$.name.otherName[thirdName][2]", test, JExpression.fromSExpression(SExpression.AtomString("New Value"))))
-    println(path.find("$..[0][? ($) == (1) ]", test3))
+    println(path.find("$[? (size()) == (2) ]", test3))
     println(JExpressionPath
         .QueryBuilder()
         .root(test3)
         .mode(PathMode.DEEP_MODE)
         .bracketIndex(0)
-        .filter("(\$) == (1)")
+        .filter("($) == (1)")
         .find()
     )
 }
