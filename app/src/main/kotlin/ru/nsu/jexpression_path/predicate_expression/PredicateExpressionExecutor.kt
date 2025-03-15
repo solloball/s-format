@@ -1,11 +1,11 @@
-package ru.nsu.jexpression_path.predict_expression
+package ru.nsu.jexpression_path.predicate_expression
 
 import ru.nsu.jexpression.JExpression
-import ru.nsu.jexpression_path.types.PredictOperand
+import ru.nsu.jexpression_path.types.PredicateOperand
 
-class PredictExpressionExecutor {
+class PredicateExpressionExecutor {
     companion object {
-        fun execute(predictionOperand: PredictOperand, jExpression: JExpression): Boolean {
+        fun execute(predictionOperand: PredicateOperand, jExpression: JExpression): Boolean {
             val res = predictionOperand.get(jExpression)
 
             if (res !is Boolean) throw IllegalArgumentException("Failed to execute predict because it return not boolean type")

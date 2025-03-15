@@ -3,9 +3,9 @@ package ru.nsu.jexpression_path.executor
 import ru.nsu.jexpression.JExpression
 import ru.nsu.jexpression_path.enums.OperandType
 import ru.nsu.jexpression_path.enums.PathMode
-import ru.nsu.jexpression_path.predict_expression.PredictExpressionExecutor
+import ru.nsu.jexpression_path.predicate_expression.PredicateExpressionExecutor
 import ru.nsu.jexpression_path.types.ParserResult
-import ru.nsu.jexpression_path.types.PredictOperand
+import ru.nsu.jexpression_path.types.PredicateOperand
 
 class JExpressionPathExecutor {
     fun execute(root: JExpression, parserResult: ParserResult): List<JExpression> {
@@ -48,7 +48,6 @@ class JExpressionPathExecutor {
             OperandType.CHILD_BRACKET -> executeChildBracket(list, operandValue.arguments)
             OperandType.ELEMENT_INDEX -> executeElementIndex(list, operandValue.arguments)
             OperandType.FILTER_EXPRESSION -> executeFilter(list, operandValue.arguments)
-            OperandType.CURRENT -> executeCurrent(list)
         }
     }
 
@@ -77,12 +76,8 @@ class JExpressionPathExecutor {
     }
 
     private fun executeFilter(list: List<JExpression>, argument: List<Any>): List<JExpression> {
-        val operand = argument[0] as PredictOperand
+        val operand = argument[0] as PredicateOperand
 
-        return list.filter { PredictExpressionExecutor.execute(operand, it) }
-    }
-
-    private fun executeCurrent(list: List<JExpression>): List<JExpression> {
-        return list
+        return list.filter { PredicateExpressionExecutor.execute(operand, it) }
     }
 }

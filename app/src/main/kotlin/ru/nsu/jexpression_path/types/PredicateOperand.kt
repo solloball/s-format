@@ -2,24 +2,24 @@ package ru.nsu.jexpression_path.types
 
 import ru.nsu.jexpression.JExpression
 
-sealed class PredictOperand {
+sealed class PredicateOperand {
     abstract fun get(jExpression: JExpression): Any?
 
-    data class Equal(val a: PredictOperand, val b: PredictOperand): PredictOperand() {
+    data class Equal(val a: PredicateOperand, val b: PredicateOperand): PredicateOperand() {
         override fun get(jExpression: JExpression): Any {
             return a.get(jExpression) == b.get(jExpression)
         }
 
     }
 
-    data class NotEqual(val a: PredictOperand, val b: PredictOperand): PredictOperand() {
+    data class NotEqual(val a: PredicateOperand, val b: PredicateOperand): PredicateOperand() {
         override fun get(jExpression: JExpression): Any {
             return a.get(jExpression) == b.get(jExpression)
         }
 
     }
 
-    data class Greater(val a: PredictOperand, val b: PredictOperand): PredictOperand() {
+    data class Greater(val a: PredicateOperand, val b: PredicateOperand): PredicateOperand() {
         override fun get(jExpression: JExpression): Any {
             val aValue = a.get(jExpression)
             val bValue = b.get(jExpression)
@@ -34,7 +34,7 @@ sealed class PredictOperand {
 
     }
 
-    data class GreaterEqual(val a: PredictOperand, val b: PredictOperand): PredictOperand() {
+    data class GreaterEqual(val a: PredicateOperand, val b: PredicateOperand): PredicateOperand() {
         override fun get(jExpression: JExpression): Any {
             val aValue = a.get(jExpression)
             val bValue = b.get(jExpression)
@@ -49,7 +49,7 @@ sealed class PredictOperand {
 
     }
 
-    data class Less(val a: PredictOperand, val b: PredictOperand): PredictOperand() {
+    data class Less(val a: PredicateOperand, val b: PredicateOperand): PredicateOperand() {
         override fun get(jExpression: JExpression): Any {
             val aValue = a.get(jExpression)
             val bValue = b.get(jExpression)
@@ -64,7 +64,7 @@ sealed class PredictOperand {
 
     }
 
-    data class LessEqual(val a: PredictOperand, val b: PredictOperand): PredictOperand() {
+    data class LessEqual(val a: PredicateOperand, val b: PredicateOperand): PredicateOperand() {
         override fun get(jExpression: JExpression): Any {
             val aValue = a.get(jExpression)
             val bValue = b.get(jExpression)
@@ -79,7 +79,7 @@ sealed class PredictOperand {
 
     }
 
-    data object Empty: PredictOperand() {
+    data object Empty: PredicateOperand() {
         override fun get(jExpression: JExpression): Any? {
             return when (jExpression) {
                 is JExpression.JArray -> jExpression.getValue().isEmpty()
@@ -90,7 +90,7 @@ sealed class PredictOperand {
         }
     }
 
-    data object Size : PredictOperand() {
+    data object Size : PredicateOperand() {
         override fun get(jExpression: JExpression): Any? {
             return when (jExpression) {
                 is JExpression.JArray -> jExpression.getValue().size
@@ -102,14 +102,14 @@ sealed class PredictOperand {
 
     }
 
-    data object Current : PredictOperand() {
+    data object Current : PredicateOperand() {
         override fun get(jExpression: JExpression): Any {
             return jExpression.getValue()
         }
 
     }
 
-    data class AtomValue(val a: Any): PredictOperand() {
+    data class AtomValue(val a: Any): PredicateOperand() {
         override fun get(jExpression: JExpression): Any {
             return a
         }

@@ -1,6 +1,6 @@
 package ru.nsu.jexpression_path.enums
 
-enum class PredictOperandType(val rawRegex: Regex) {
+enum class PredicateOperandType(val rawRegex: Regex) {
     EQUAL(Regex("\\((.*)\\) == \\((.*)\\)")),
     NOT_EQUAL(Regex("\\((.*)\\) != \\((.*)\\)")),
     GREATER(Regex("\\((.*)\\) > \\((.*)\\)")),

@@ -2,9 +2,9 @@ package ru.nsu.jexpression_path.parser
 
 import ru.nsu.jexpression_path.enums.OperandType
 import ru.nsu.jexpression_path.enums.PathMode
-import ru.nsu.jexpression_path.predict_expression.PredictExpressionParser
+import ru.nsu.jexpression_path.predicate_expression.PredicateExpressionParser
 import ru.nsu.jexpression_path.types.ParserResult
-import ru.nsu.jexpression_path.types.PredictOperand
+import ru.nsu.jexpression_path.types.PredicateOperand
 
 class JExpressionPathParser {
     fun parse(jExpressionPath: String): ParserResult {
@@ -34,7 +34,7 @@ class JExpressionPathParser {
                     String::class -> rawValue
                     Int::class -> rawValue.toIntOrNull()
                         ?: throw IllegalArgumentException("Failed to parse because of illegal int: $rawValue")
-                    PredictOperand::class -> PredictExpressionParser.parse(rawValue)
+                    PredicateOperand::class -> PredicateExpressionParser.parse(rawValue)
                     else -> throw IllegalArgumentException("Not implemented")
                 }
             }
