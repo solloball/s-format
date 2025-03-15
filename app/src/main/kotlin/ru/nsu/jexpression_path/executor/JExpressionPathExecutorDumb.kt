@@ -28,7 +28,17 @@ class JExpressionPathExecutorDumb: JExpressionPathExecutor {
     }
 
     private fun executeDeep(root: JExpression, parserResult: ParserResult): List<JExpression> {
-        TODO()
+        val res = ArrayList<JExpression>()
+
+        res.addAll(executeDefault(root, parserResult))
+
+        when (root) {
+            is JExpression.JArray -> root.getValue().forEach{ res.addAll(executeDeep(it, parserResult)) }
+            is JExpression.JObject -> root.getValue().forEach{ res.addAll(executeDeep(it.value, parserResult)) }
+            else -> {}
+        }
+
+        return res
     }
 
     private fun executeOperand(list: List<JExpression>, operandValue: ParserResult.OperandValue): List<JExpression> {

@@ -27,8 +27,6 @@ class JExpressionPathParserDumb: JExpressionPathParser {
                 throw  IllegalArgumentException("Failed to parse because of illegal count of groupValues: $path")
             }
 
-            val reg = operand.shortRegex()
-
             val values: List<Any> = operand.argumentTypes().mapIndexed { index, kClass ->
                 val rawValue = matchedPath.groupValues[index + 1]
                 when (kClass) {

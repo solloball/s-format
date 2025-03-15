@@ -5,22 +5,20 @@ package ru.nsu
 
 import ru.nsu.jexpression.JExpression
 import ru.nsu.jexpression_path.JExpressionPath
-import ru.nsu.jexpression_path.executor.JExpressionPathExecutor
 import ru.nsu.jexpression_path.executor.JExpressionPathExecutorDumb
-import ru.nsu.jexpression_path.parser.JExpressionPathParser
 import ru.nsu.jexpression_path.parser.JExpressionPathParserDumb
-import ru.nsu.jexpression_path.validator.JExpressionPathValidatorDumb
 import ru.nsu.sexpression.SExpressionParserDumb
 
 fun main() {
     val parser = SExpressionParserDumb()
     val test = JExpression.fromSExpression(parser.parse("[ name [ otherName [ thirdName ( 1 2 SUCCESS  ) ] ]  ]"))
+    val test2 = JExpression.fromSExpression(parser.parse("[ name [ name [ thirdName ( 1 2 SUCCESS  ) ] ]  ]"))
 
-    val path = JExpressionPath.Builder(
-        JExpressionPathParserDumb(),
-        JExpressionPathValidatorDumb(),
-        JExpressionPathExecutorDumb(),
-    ).build()
+    val path = JExpressionPath.Builder()
+        .parser(JExpressionPathParserDumb())
+        .executor(JExpressionPathExecutorDumb())
+        .build()
 
     println(path.find("$.name.otherName[thirdName][2]", test))
+    println(path.find("$..[name]", test2))
 }
