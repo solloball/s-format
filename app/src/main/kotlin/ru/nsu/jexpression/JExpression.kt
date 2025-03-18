@@ -50,10 +50,14 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
 
     class JObject private constructor(private val sExpression: SExpression.Array) : JExpression(sExpression = sExpression) {
         override fun getValue(): Map<String, JExpression> {
-            val res = HashMap<String, JExpression>()
+            val res = mutableMapOf<String, JExpression>()
 
-            for (i in 0..sExpression.elements.size / 2 step 2) {
-                val key = sExpression.elements[i] as SExpression.AtomString
+            // Перебор элементов массива, где ключи и значения чередуются
+            for (i in 0 until sExpression.elements.size step 2) {
+                val key = sExpression.elements[i] as? SExpression.AtomString
+                    ?: throw IllegalArgumentException("Expected string key in JObject")
+
+                // Преобразуем значение через fromSExpression в соответствующий объект JExpression
                 val value = fromSExpression(sExpression.elements[i + 1])
                 res[key.value] = value
             }
@@ -64,28 +68,32 @@ sealed class JExpression private constructor(private val sExpression: SExpressio
         companion object {
             fun fromSExpression(sExpression: SExpression.Array): JObject {
                 if (!validate(sExpression)) {
-                    throw IllegalArgumentException("Failed to create instance because of invalid format of object $sExpression")
+                    throw IllegalArgumentException("Failed to create instance due to invalid format of object $sExpression")
                 }
                 return JObject(sExpression)
             }
 
             private fun validate(sExpression: SExpression.Array): Boolean {
+                // Проверка на корректность структуры SExpression.Array
                 if (sExpression.elements.isEmpty() || sExpression.elements.size % 2 != 0) {
                     return false
                 }
-                val  keys = HashSet<String>()
-                for(i in 0..sExpression.elements.size / 2 step 2) {
-                    val value = sExpression.elements[i]
-                    if (value !is SExpression.AtomString || keys.contains(value.value)) {
-                        return false
+                val keys = mutableSetOf<String>()
+                for (i in 0 until sExpression.elements.size step 2) {
+                    val key = sExpression.elements[i] as? SExpression.AtomString
+                        ?: return false // Ключ должен быть строкой
+                    if (keys.contains(key.value)) {
+                        return false // Проверка на уникальность ключей
                     }
-                    keys.add(value.value)
+                    keys.add(key.value)
                 }
                 return true
             }
         }
     }
+
     companion object {
+        // Метод для конвертации SExpression в JExpression
         fun fromSExpression(sExpression: SExpression): JExpression {
             return when (sExpression) {
                 is SExpression.Array -> JObject.fromSExpression(sExpression)
