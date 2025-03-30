@@ -121,4 +121,4 @@ class JExpressionTest {
         assertTrue(jArray is JExpression.JArray)
         assertTrue(jObject is JExpression.JObject)
     }
-}
+

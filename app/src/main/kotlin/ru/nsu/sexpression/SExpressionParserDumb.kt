@@ -57,12 +57,20 @@ class SExpressionParserDumb: SExpressionParser {
 
     private fun parseAtom(): SExpression {
         val sb = StringBuilder()
-        while (peek().let { it != null && !invalidAtomValues.contains(it) }) {
-            sb.append(next())
+        if (peek() == '\'' || peek() == '"') { // Начало строки
+            val quote = next()
+            while (peek() != quote) { // Читаем до закрывающей кавычки
+                sb.append(next())
+            }
+            next() // Пропускаем закрывающую кавычку
+        } else {
+            while (peek().let { it != null && !invalidAtomValues.contains(it) }) {
+                sb.append(next())
+            }
         }
 
         val value = sb.toString()
-        return if (value.toIntOrNull() != null) SExpression.AtomInteger(value.toInt()) else  SExpression.AtomString(value)
+        return if (value.toIntOrNull() != null) SExpression.AtomInteger(value.toInt()) else SExpression.AtomString(value)
     }
 
     private fun skipCharacters() {

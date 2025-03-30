@@ -1,3 +1,10 @@
+
+package ru.nsu.sexpression
+
+import org.junit.jupiter.api.Assertions.*
+
+class SExpressionParserDumbTest
+
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import ru.nsu.sexpression.SExpression
@@ -110,3 +117,4 @@ class SExpressionParserDumbTest {
         assertEquals(123, (list.elements[1] as SExpression.AtomInteger).value)
     }
 }
+
