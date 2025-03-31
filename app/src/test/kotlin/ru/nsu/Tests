@@ -1,0 +1,194 @@
+package ru.nsu
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import ru.nsu.jexpression.JExpression
+import ru.nsu.jexpression_path.JExpressionPath
+import ru.nsu.jexpression_path.enums.PathMode
+import ru.nsu.jschema.JSchema
+import ru.nsu.sexpression.SExpression
+import ru.nsu.sexpression.SExpressionParserDumb
+import kotlin.test.assertTrue
+import kotlin.test.assertFalse
+
+class PetStoreSchemaTest {
+    private val stringSchema = JSchema.JStringSchema
+    private val intSchema = JSchema.JIntegerSchema
+    private val parser = SExpressionParserDumb()
+    private val path = JExpressionPath()
+    private val petStoreData = JExpression.fromSExpression(parser.parse(
+        """
+        [ storeName "Happy Pets" location "Main Street" products (
+          [ name "Dog Food" price 20 category "Food" ]
+          [ name "Cat Toy" price 10 category "Toys" ]
+          [ name "Bird Cage" price 50 category "Housing" ]
+        ) ]
+        """
+    ))
+
+    //тесты на поиск узлов
+
+    @Test
+    fun testFindStoreName() {
+        val result = path.find("$.storeName", petStoreData)
+        assertEquals("Happy Pets", result.first().toString())
+    }
+
+    @Test
+    fun testFindStoreLocation() {
+        val result = path.find("$.location", petStoreData)
+        assertEquals("Main Street", result.first().toString())
+    }
+
+    @Test
+    fun testFindAllProducts() {
+        val result = path.find("$.products", petStoreData)
+        assertEquals("[ ( [ name Dog Food price 20 category Food ]  [ name Cat Toy price 10 category Toys ]  [ name Bird Cage price 50 category Housing ]  ) ]", result.toString())
+    }
+
+    @Test
+    fun testFindElement() {
+        val testExp = JExpression.fromSExpression(parser.parse("[ name [ otherName [ thirdName ( 1 2 SUCCESS  ) ] ]  ]"))
+        val result = path.find("$.name.otherName[thirdName][2]", testExp)
+        assertEquals("[SUCCESS]", result.toString())
+    }
+
+    @Test
+    fun testFindElement2() {
+        val testExp = JExpression.fromSExpression(parser.parse("( ( 1 2 3 ) ( 1 2 ) ( 1 2 3 4 ) )"))
+        val result = JExpressionPath
+            .QueryBuilder()
+            .root(testExp)
+            .mode(PathMode.DEEP_MODE)
+            .bracketIndex(0)
+            .filter("($) == (1)")
+            .find()
+        assertEquals("[1, 1, 1, 1]", result.toString())
+    }
+
+    //тест на модификацию узла
+
+    @Test
+    fun testModifyStoreName() {
+        val newStoreName = "New shop name"
+        val modificatedShop = "[ storeName New shop name location Main Street products  ( [ name Dog Food price 20 category Food ]  [ name Cat Toy price 10 category Toys ]  [ name Bird Cage price 50 category Housing ]  )  ] "
+        val modifiedPetStoreData = path.modify("$.storeName", petStoreData, JExpression.fromSExpression(SExpression.AtomString(newStoreName)))
+        //проверяем что имя изменилось так как нужно
+        assertTrue(modifiedPetStoreData.value.toString().compareTo(modificatedShop) == 0)
+        //проверяем что изначальные данные не поменялись, а изменились только новые
+        assertFalse(modificatedShop.equals(petStoreData.toString()))
+    }
+
+    //тесты на валидацию по схеме
+
+
+    //примеры схем продуктов и магазина
+    private val productSchema = JSchema.JObjectSchema(
+        //все поля
+        mapOf(
+            "name" to stringSchema,
+            "price" to intSchema,
+            "category" to stringSchema
+        ),
+        //обязательные поля
+        setOf("name", "price")
+    )
+
+    private val storeSchema = JSchema.JObjectSchema(
+        mapOf(
+            "storeName" to stringSchema,
+            "location" to stringSchema,
+            "products" to JSchema.JArraySchema(productSchema)
+        ),
+        setOf("storeName", "products")
+    )
+
+
+    //валидная схема
+    @Test
+    fun testValidPetStore() {
+        val validPetStore = JExpression.JObject.fromSExpression(
+            SExpression.Array(
+                listOf(
+                    SExpression.AtomString("storeName"), SExpression.AtomString("Happy Pets"),
+                    SExpression.AtomString("location"), SExpression.AtomString("Main Street"),
+                    SExpression.AtomString("products"), SExpression.List(
+                        listOf(
+                            SExpression.Array(
+                                listOf(
+                                    SExpression.AtomString("name"), SExpression.AtomString("Dog Food"),
+                                    SExpression.AtomString("price"), SExpression.AtomInteger(20),
+                                    SExpression.AtomString("category"), SExpression.AtomString("Food")
+                                )
+                            ),
+                            SExpression.Array(
+                                listOf(
+                                    SExpression.AtomString("name"), SExpression.AtomString("Cat Toy"),
+                                    SExpression.AtomString("price"), SExpression.AtomInteger(10)
+                                )
+                            ),
+                            SExpression.Array(
+                                listOf(
+                                    SExpression.AtomString("name"), SExpression.AtomString("Cat Toy"),
+                                    SExpression.AtomString("price"), SExpression.AtomInteger(10)
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        assertTrue(JSchema.validateDocument(validPetStore, storeSchema))
+    }
+
+
+    //неправильная схема
+    @Test
+    fun testInvalidPetStore_MissingRequiredField() {
+        val invalidPetStore = JExpression.JObject.fromSExpression(
+            SExpression.Array(
+                listOf(
+                    SExpression.AtomString("location"), SExpression.AtomString("Downtown"),
+                    SExpression.AtomString("products"), SExpression.List(
+                        listOf(
+                            SExpression.Array(
+                                listOf(
+                                    SExpression.AtomString("name"), SExpression.AtomString("Bird Cage"),
+                                    SExpression.AtomString("price"), SExpression.AtomInteger(50)
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        assertFalse(JSchema.validateDocument(invalidPetStore, storeSchema))
+    }
+
+    @Test
+    fun testInvalidPetStoreMissingRequiredField() {
+        val invalidPetStore = JExpression.fromSExpression(parser.parse(
+            "[ location 'Downtown' products ( [ name 'Bird Cage' price 50 ] ) ]"
+        ))
+        assertFalse(JSchema.validateDocument(invalidPetStore, storeSchema))
+    }
+
+    @Test
+    fun testValidPetStoreMultipleProducts() {
+        val validPetStore = JExpression.fromSExpression(parser.parse(
+            "[ storeName \"Best Pets\" location \"Main Street\" products ( " +
+                    "[ name \"Dog Food\" price 25 category \"Food\" ] " +
+                    "[ name \"Cat Litter\" price 15 category \"Hygiene\" ] " +
+                    "[ name \"Bird Cage\" price 50 category \"Housing\" ] " +
+                    ") ]"
+        ))
+        assertTrue(JSchema.validateDocument(validPetStore, storeSchema))
+    }
+
+
+
+
+
+
+}
+
